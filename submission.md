@@ -95,7 +95,7 @@ Expected: streak goes from 12 to 13 — I listened on consecutive days. Actual: 
 4. How you found the root cause: Checked the songs/song_id/listen endpoint and saw line 73 had a check to update the streak if the days_since_last was 1 and if today wasnt a Sunday. If it is a sunday, the streak does not update.
 4. The root cause: update_listening_streak line 73 checks if it is Sunday, and if it is, does not update the streak.
 5. Fix and side effect check: Removed and condition and reran browser test to confirm fix.
-6. Notes: None
+6. Notes: Recomit to add submission
 ### Issue 2-Friends Listening Now shows people from yesterday
 User: nova
 9am it showed darius "listening now" to a song he told me he played at 11pm last night, 
