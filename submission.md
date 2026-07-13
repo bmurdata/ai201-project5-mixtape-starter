@@ -89,10 +89,13 @@ Listened to a song every calendar day, including Saturday.
 Listened again Sunday morning and checked my streak (GET /users/<my_id>/streak).
 Expected: streak goes from 12 to 13 — I listened on consecutive days. Actual: streak shows 1, as if I'd skipped a day.
 
-Steps to reproduce: 
-
-Steps to resolve:
-
+#### Root cause analysis
+1. Issue 1-My listening streak keeps resetting
+2. How you reproduced it: Checked /users/<user_id>/streak and saw streak was set to 12. Hit the songs/song_id/listen to record a listen on a Sunday, and saw streak reset to 1.
+4. How you found the root cause: Checked the songs/song_id/listen endpoint and saw line 73 had a check to update the streak if the days_since_last was 1 and if today wasnt a Sunday. If it is a sunday, the streak does not update.
+4. The root cause: update_listening_streak line 73 checks if it is Sunday, and if it is, does not update the streak.
+5. Fix and side effect check: Removed and condition and reran browser test to confirm fix.
+6. Notes: None
 ### Issue 2-Friends Listening Now shows people from yesterday
 User: nova
 9am it showed darius "listening now" to a song he told me he played at 11pm last night, 
