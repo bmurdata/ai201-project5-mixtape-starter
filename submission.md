@@ -186,3 +186,11 @@ Expected: every song in the playlist is returned, including the newest. Actual: 
 5. Fix and side effect check: removed [:-1] from line 66 and ensured it worked by adding a new song.
 6. Notes: 
 
+## AI useage
+
+Used AI to explain datetime functions, and suggest a fix for the cutoff error. Fed it the get_friends_listening_now and it recommended the fix. However, I had to prompt it several times as it gave incorrect strptime parsing which caused crashes. It also did not validate for None events, which I had to do myself.
+
+
+Used AI to summarize the models and other files so I could focus on bug fixes and get and idea of the codebase.
+
+I attempted to use AI to fix the listening now bug, but Claude could not give me a fix even with the code. I had to look into where it was confused and found a workable solution. 
