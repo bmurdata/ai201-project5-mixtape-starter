@@ -149,3 +149,40 @@ Expected: a notification for the rating, same as for the playlist add. Actual: r
 5. Fix and side effect check: Updated rate_song to create a notification when a user rates a song shared by a different user by adding a create_notification call
 6. Notes: 
 
+### Issue 4-I got notified when a friend added my song to a playlist but not when they rated it
+User: aaliya 
+Rating notification not working 
+Notifications work when someone adds a song I shared to a playlist — I get "kenji added your song…" right away. But when kenji rated one of my songs (he showed me, 5 stars), I never got a notification. No delay, just nothing, and there's nothing in my notification list (GET /users/<my_id>/notifications) either
+
+Steps I took:
+
+Had a friend add my shared song to a playlist → notification arrived. ✅
+Had the same friend rate a different song I shared (POST /songs/<song_id>/rate) → checked my notifications.
+Expected: a notification for the rating, same as for the playlist add. Actual: rating is saved (it shows on the song), but no notification is ever created.
+#### Root cause analysis
+1. Issue 4-I got notified when a friend added my song to a playlist but not when they rated it
+2. How you reproduced it:  Checked the GET /users/<my_id>/notifications before and after running POST /songs/<song_id>/rate and did not see a notification of the new rating. I also added a song to a playlist and saw that a notification was created.
+4. How you found the root cause: Checked the notification_service for add_to_playlist and saw that it was creating a notification when a song was shared by someone else.
+4. The root cause: notification not created when song rated in notification_services
+5. Fix and side effect check: Updated rate_song to create a notification when a user rates a song shared by a different user by adding a create_notification call
+6. Notes: 
+
+### Issue 5-The last song in a playlist never shows up
+User: darius 
+Playlist adding not working
+
+Our collaborative playlist "Friday Energy" says it has 7 songs, but when I open it only 6 show. The missing one is always whatever was added most recently. 
+Steps I took:
+
+Opened the playlist (GET /playlists/<playlist_id>/songs) and counted the songs.
+Added one more song (POST /playlists/<playlist_id>/songs) and re-fetched.
+Expected: every song in the playlist is returned, including the newest. Actual: the most recently added song is always missing; adding another song "frees" the previous one and hides the new one instead.
+
+#### Root cause analysis
+1. Issue 5-The last song in a playlist never shows up
+2. How you reproduced it:  Checked the playlist/songs endpoint before and after and adding a song to a playlist. Before showed some songs, and after showed did not show the most recent addition.
+4. How you found the root cause: Checked playlist_services called by playlist/songs and found get_playlist_songs returned [:-1] meaning the last item was truncated.
+4. The root cause: get_playlist_songs returned [:-1] meaning the last item was truncated.
+5. Fix and side effect check: removed [:-1] from line 66 and ensured it worked by adding a new song.
+6. Notes: 
+
