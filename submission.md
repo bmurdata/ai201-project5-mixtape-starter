@@ -130,3 +130,22 @@ Expected: each matching song appears exactly once. Actual: some songs appear onc
 4. The root cause: Root cause was found to be outerjoin in /search_services file
 5. Fix and side effect check: .outerjoin removed as in the future it may impact the application if SQLalchemy API changes. Re ran application and no errors found
 6. Notes: The Query object, when asked to return either a sequence or iterator that consists of full ORM-mapped entities, will deduplicate entries based on primary key. See the FAQ for more details.
+
+### Issue 4-I got notified when a friend added my song to a playlist but not when they rated it
+User: aaliya 
+Rating notification not working 
+Notifications work when someone adds a song I shared to a playlist — I get "kenji added your song…" right away. But when kenji rated one of my songs (he showed me, 5 stars), I never got a notification. No delay, just nothing, and there's nothing in my notification list (GET /users/<my_id>/notifications) either
+
+Steps I took:
+
+Had a friend add my shared song to a playlist → notification arrived. ✅
+Had the same friend rate a different song I shared (POST /songs/<song_id>/rate) → checked my notifications.
+Expected: a notification for the rating, same as for the playlist add. Actual: rating is saved (it shows on the song), but no notification is ever created.
+#### Root cause analysis
+1. Issue 4-I got notified when a friend added my song to a playlist but not when they rated it
+2. How you reproduced it:  Checked the GET /users/<my_id>/notifications before and after running POST /songs/<song_id>/rate and did not see a notification of the new rating. I also added a song to a playlist and saw that a notification was created.
+4. How you found the root cause: Checked the notification_service for add_to_playlist and saw that it was creating a notification when a song was shared by someone else.
+4. The root cause: notification not created when song rated in notification_services
+5. Fix and side effect check: Updated rate_song to create a notification when a user rates a song shared by a different user by adding a create_notification call
+6. Notes: 
+
