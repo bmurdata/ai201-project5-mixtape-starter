@@ -4,7 +4,7 @@ services/feed_service.py — Mixtape
 Handles the "Friends Listening Now" feed and activity feed logic.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone ,time
 from sqlalchemy import desc
 from app import db
 from models import User, Song, ListeningEvent
@@ -29,7 +29,9 @@ def get_friends_listening_now(user_id: str) -> list[dict]:
     if not user:
         raise ValueError(f"User {user_id} not found")
 
-    cutoff = datetime.now(timezone.utc) - RECENT_THRESHOLD
+    #cutoff = datetime.now(timezone.utc) - RECENT_THRESHOLD
+    cutoff = datetime.combine(datetime.now(timezone.utc).date(), time.min, tzinfo=timezone.utc)
+    print(cutoff)
     friend_ids = [f.id for f in user.friends]
 
     if not friend_ids:
@@ -39,7 +41,7 @@ def get_friends_listening_now(user_id: str) -> list[dict]:
         db.session.query(ListeningEvent)
         .filter(
             ListeningEvent.user_id.in_(friend_ids),
-            ListeningEvent.listened_at >= cutoff,
+            ListeningEvent.listened_at >= cutoff
         )
         .order_by(desc(ListeningEvent.listened_at))
         .all()
@@ -49,7 +51,23 @@ def get_friends_listening_now(user_id: str) -> list[dict]:
     seen_friends = set()
     result = []
     for event in recent_events:
-        if event.user_id not in seen_friends:
+        # Check last listened date for users
+        user_friend = db.session.get(User, event.user_id).to_dict()
+        print(type(user_friend['last_listened_at']))
+        if user_friend['last_listened_at']:
+            parsed = datetime.fromisoformat(user_friend['last_listened_at'])
+            if parsed.tzinfo is None:
+                parsed = parsed.replace(tzinfo=timezone.utc)
+            if event.user_id not in seen_friends and parsed>= cutoff:
+                seen_friends.add(event.user_id)
+                friend = db.session.get(User, event.user_id)
+                song = db.session.get(Song, event.song_id)
+                result.append({
+                    "friend": friend.to_dict(),
+                    "song": song.to_dict(),
+                    "listened_at": event.listened_at.isoformat(),
+                })
+        elif event.user_id not in seen_friends:
             seen_friends.add(event.user_id)
             friend = db.session.get(User, event.user_id)
             song = db.session.get(Song, event.song_id)

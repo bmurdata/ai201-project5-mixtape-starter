@@ -96,6 +96,8 @@ Expected: streak goes from 12 to 13 — I listened on consecutive days. Actual: 
 4. The root cause: update_listening_streak line 73 checks if it is Sunday, and if it is, does not update the streak.
 5. Fix and side effect check: Removed and condition and reran browser test to confirm fix.
 6. Notes: Recomit to add submission
+
+
 ### Issue 2-Friends Listening Now shows people from yesterday
 User: nova
 9am it showed darius "listening now" to a song he told me he played at 11pm last night, 
@@ -104,6 +106,14 @@ Steps User took:
 Opened my feed in the morning (GET /feed/<my_id>/listening-now).
 Cross-checked with darius: his last listen was the previous night.
 Expected: only friends who have listened today appear. Actual: friends whose last listen was yesterday evening still show up the next morning.
+
+#### Root cause analysis
+1. Issue 2-Friends Listening Now shows people from yesterday
+2. How you reproduced it: checked /feed/nova_id/listening-now, confirmed darius shows up as listening now when last listen was day before. 
+4. How you found the root cause: checked feed.py to find the listening-now endpoint, and found it called get_friends_listening_now from feed_services. I then found it had a cutoff threshold of 24 hours, which is one source of the bug. The user last_listened_at is also not checked, which showed darius even though they were on the app the day before.
+4. The root cause: RECENT_THRESHOLD is set to 24 hours, and is used to set a cutoff of 24 hours ago, which includes yesterday. Additionally, the for loop doesnt check the last_listened_at field from the user. 
+5. Fix and side effect check: Edited get_friends_listening_now function to use a cutoff at the start of today, and added a check for user friends last_listened_at to be today as well. This removed darius. I re-ran and ensured it would work as intended.
+6. Notes: Additional condition used when friend last listened is None
 
 ### Issue 3-The same song keeps showing up twice in search
 User: simone 
