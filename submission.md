@@ -110,12 +110,10 @@ Steps I took:
 Searched for a song (GET /songs/search?q=Anthem).
 Counted the results.
 Expected: each matching song appears exactly once. Actual: some songs appear once, others two or three times, for a single-song match.
-
-Steps to reproduce: 
-Navigated to GET request  /songs/search?q=Anthem and every other song, including "el".  
-
-Result: Unable to reproduce behavior. It seems the .outerjoin should be causing an error, however it does not due to .all() as documented here: https://docs.sqlalchemy.org/en/14/orm/query.html
-
-The Query object, when asked to return either a sequence or iterator that consists of full ORM-mapped entities, will deduplicate entries based on primary key. See the FAQ for more details.
-
-Fix: .outerjoin removed as in the future it may impact the application if SQLalchemy API changes.
+#### Root cause analysis
+1. Issue 3-The same song keeps showing up twice in search
+2. How you reproduced it: Navigated to GET request  /songs/search?q=Anthem and every other song, including "el".  
+4. How you found the root cause: I was unable to reproduce the bug on the browser. I then checked the search_services file. There, it seems the .outerjoin should be causing an error, however it does not due to .all() as documented here: https://docs.sqlalchemy.org/en/14/orm/query.html
+4. The root cause: Root cause was found to be outerjoin in /search_services file
+5. Fix and side effect check: .outerjoin removed as in the future it may impact the application if SQLalchemy API changes. Re ran application and no errors found
+6. Notes: The Query object, when asked to return either a sequence or iterator that consists of full ORM-mapped entities, will deduplicate entries based on primary key. See the FAQ for more details.
